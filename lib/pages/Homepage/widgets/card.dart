@@ -113,7 +113,7 @@ Widget createHorizontalCard({
       color: Colors.white,
       boxShadow: [
         BoxShadow(
-          blurRadius: 4,
+          blurRadius: 10,
           spreadRadius: 1,
           offset: Offset(0, 2),
           color: Color.fromRGBO(33, 40, 50, 0.15),
@@ -138,6 +138,7 @@ Widget createHorizontalCard({
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   name,

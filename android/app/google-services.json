@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "51302484906",
+    "project_id": "hunter-a36dd",
+    "storage_bucket": "hunter-a36dd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:51302484906:android:29f9749e50f04a3c7bb9d3",
+        "android_client_info": {
+          "package_name": "com.example.hunter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "51302484906-9kbpdf0ampbj4hchc6p5mh0b1aveof1j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.hunter",
+            "certificate_hash": "4744619f8df3892eeb9dd7e2dc1df98e3b0ccb62"
+          }
+        },
+        {
+          "client_id": "51302484906-ue9cp6l0rfgiat8up1thh96i9k347m4n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOFuQykVMD9oVA5kGfjvHCx-Kzx2QRSMo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "51302484906-ue9cp6l0rfgiat8up1thh96i9k347m4n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

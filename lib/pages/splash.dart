@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hunter/pages/Homepage/home.dart';
+import 'package:hunter/pages/login/login.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -135,7 +136,7 @@ class SplashScreenState extends State<SplashScreen> {
               onPressed: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => HomePage()),
+                  MaterialPageRoute(builder: (context) => HunterAuthPage()),
                 );
               },
               child: Text("Get Started"),
