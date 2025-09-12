@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 Widget createCard({
-  required String image,
+  required Widget image,
   required String name,
   required String details,
   required String price,
@@ -10,7 +10,10 @@ Widget createCard({
   double? height,
   void Function()? onBookmarkTap, // Optional tap handler
 }) {
-  return Container(
+  return GestureDetector(
+    onTap: onBookmarkTap,
+    child: 
+  Container(
     width: width ?? 250,
     height: height ?? 300,
     decoration: BoxDecoration(
@@ -34,12 +37,7 @@ Widget createCard({
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(15),
-                child: Image.asset(
-                  image,
-                  width: double.infinity,
-                  height: 150,
-                  fit: BoxFit.cover,
-                ),
+                child: image
               ),
               Positioned(
                 bottom: -5,
@@ -89,11 +87,11 @@ Widget createCard({
         ],
       ),
     ),
-  );
+  ));
 }
 
 Widget createHorizontalCard({
-  required String image,
+  required Widget image,
   required String name,
   required String details,
   required String price,
@@ -107,7 +105,7 @@ Widget createHorizontalCard({
     child: 
   Container(
     width: width ?? double.infinity,
-    height: height ?? 100,
+    height: height,
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(20),
       color: Colors.white,
@@ -126,12 +124,7 @@ Widget createHorizontalCard({
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: Image.asset(
-              image,
-              fit: BoxFit.cover,
-              width: 80,
-              height: 80,
-            ),
+            child: image
           ),
           SizedBox(width: 16), // spacing between image and content
           Expanded(

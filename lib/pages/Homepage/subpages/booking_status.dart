@@ -1,5 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:hunter/pages/Homepage/widgets/snackbar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:hunter/pages/controllers/booking_controller.dart';
 
@@ -16,6 +19,7 @@ class _BookingOverviewPageState extends State<BookingOverviewPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late Booking booking;
+  String phoneNumber = '';
 
   @override
   void initState() {
@@ -25,6 +29,7 @@ class _BookingOverviewPageState extends State<BookingOverviewPage>
     if (booking.status == 'Completed') {
       _tabController.animateTo(1);
     }
+    
   }
 
   @override
@@ -32,6 +37,7 @@ class _BookingOverviewPageState extends State<BookingOverviewPage>
     _tabController.dispose();
     super.dispose();
   }
+
 
   /// Chip UI for status
   Widget buildStatusChip(String status) {
@@ -52,17 +58,61 @@ class _BookingOverviewPageState extends State<BookingOverviewPage>
     );
   }
 
-  /// Booking detail row
   Widget detailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Text("$label: ", style: const TextStyle(fontWeight: FontWeight.w600)),
-          Expanded(
-            child: Text(value, style: const TextStyle(color: Colors.black87)),
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: Duration(milliseconds: 600),
+      curve: Curves.easeOutCubic,
+      builder: (context, opacity, child) {
+        return Opacity(
+          opacity: opacity,
+          child: Transform.translate(
+            offset: Offset(0, 20 * (1 - opacity)), // Slide up animation
+            child: child,
           ),
-        ],
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFFE3F2FD),
+              Color.fromARGB(255, 230, 238, 244),
+              Color.fromARGB(255, 139, 181, 221),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blueAccent.withValues(alpha: .2),
+              blurRadius: 12,
+              offset: Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Text(
+              "$label: ",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.blueGrey[800],
+              ),
+            ),
+            Expanded(
+              child: Text(
+                value,
+                style: TextStyle(fontSize: 16, color: Colors.blueGrey[900]),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -73,9 +123,9 @@ class _BookingOverviewPageState extends State<BookingOverviewPage>
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Could not launch dialer")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Could not launch dialer")));
     }
   }
 
@@ -93,10 +143,12 @@ class _BookingOverviewPageState extends State<BookingOverviewPage>
               items: booking.images.map((img) {
                 return ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Image.asset(
-                    img,
-                    width: double.infinity,
+                  child: CachedNetworkImage(
+                    imageUrl: img,
                     fit: BoxFit.cover,
+                    errorWidget: (context, url, error) =>
+                        Center(child: Text('No preview..')),
+                    placeholder: (context, url) => CircularProgressIndicator(),
                   ),
                 );
               }).toList(),
@@ -165,20 +217,40 @@ class _BookingOverviewPageState extends State<BookingOverviewPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         detailRow("Booking ID", booking.id),
+                        SizedBox(height: 10),
                         detailRow("Booking Date", booking.date),
+                        SizedBox(height: 10),
+                        detailRow("Price", booking.price),
+                        SizedBox(height: 10),
                         detailRow("Check-In", booking.checkIn),
+                        SizedBox(height: 10),
                         detailRow("Check-Out", booking.checkOut),
+                        SizedBox(height: 10),
                         detailRow("Payment Status", booking.paymentStatus),
-                        detailRow("Phone", booking.phoneNumber!),
+                        SizedBox(height: 10),
+                        detailRow("Phone", booking.phoneNumber),
                         const SizedBox(height: 12),
 
-                        ElevatedButton.icon(
-                          onPressed: () => _launchCaller(booking.phoneNumber!),
-                          icon: const Icon(Icons.phone,color: Colors.white,),
-                          label: const Text("Call Now", style: TextStyle(color: Colors.white),),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            ElevatedButton.icon(
+                              onPressed: () =>
+                                  _launchCaller(booking.phoneNumber),
+                              icon: const Icon(
+                                Icons.phone,
+                                color: Colors.white,
+                              ),
+                              label: const Text(
+                                "Call Now",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                              ),
+                            ),
+                            Text('👈 Contact agent'),
+                          ],
                         ),
 
                         const SizedBox(height: 10),
@@ -188,8 +260,11 @@ class _BookingOverviewPageState extends State<BookingOverviewPage>
                             onPressed: () {
                               // Cancel or manage booking
                             },
-                            icon: const Icon(Icons.cancel, color: Colors.white,),
-                            label: const Text("Cancel Booking", style: TextStyle(color: Colors.white),),
+                            icon: const Icon(Icons.cancel, color: Colors.white),
+                            label: const Text(
+                              "Cancel Booking",
+                              style: TextStyle(color: Colors.white),
+                            ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.redAccent,
                             ),
@@ -205,18 +280,33 @@ class _BookingOverviewPageState extends State<BookingOverviewPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         detailRow("Booking ID", booking.id),
-                        detailRow("Stay Duration", "${booking.checkIn} → ${booking.checkOut}"),
+                        detailRow(
+                          "Stay Duration",
+                          "${booking.checkIn} → ${booking.checkOut}",
+                        ),
                         detailRow("Payment", booking.paymentStatus),
                         if (booking.review != null)
                           detailRow("Review", booking.review!),
 
                         const SizedBox(height: 10),
                         ElevatedButton.icon(
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStatePropertyAll(
+                              Colors.blue,
+                            ),
+                            foregroundColor: WidgetStatePropertyAll(
+                              Colors.white,
+                            ),
+                          ),
                           onPressed: () {
-                            // Add review action
+                            ShowSnackBar().success(
+                              context: context,
+                              title: 'Purchase',
+                              message: 'Successfully completed',
+                            );
                           },
                           icon: const Icon(Icons.reviews_outlined),
-                          label: const Text("Write a Review"),
+                          label: const Text("Mark as Completed"),
                         ),
                       ],
                     ),

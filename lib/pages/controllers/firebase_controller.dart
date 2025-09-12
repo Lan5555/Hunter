@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -14,11 +15,10 @@ abstract class FirebaseProps {
 class FirebaseController implements FirebaseProps {
   final FirebaseFirestore firebase = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
   @override
   Future<void> addData(String path, String id, Map<String, dynamic> data) async {
-    final docRef = FirebaseFirestore.instance.collection(path).doc();
+    final docRef = FirebaseFirestore.instance.collection(path).doc(id);
     await docRef.set({
       ...data,
       'userId': id,
@@ -60,7 +60,9 @@ class FirebaseController implements FirebaseProps {
   // Update the entire document
   await docRef.set(existingData);
 
-  print("Upload stored under key: $nextKey");
+  if (kDebugMode) {
+    print("Upload stored under key: $nextKey");
+  }
 }
 
 
@@ -91,7 +93,9 @@ class FirebaseController implements FirebaseProps {
       );
       return credential.user;
     } catch (e) {
-      print('Sign up error: $e');
+      if (kDebugMode) {
+        print('Sign up error: $e');
+      }
       return null;
     }
   }
@@ -104,7 +108,9 @@ class FirebaseController implements FirebaseProps {
       );
       return credential.user;
     } catch (e) {
-      print('Sign in error: $e');
+      if (kDebugMode) {
+        print('Sign in error: $e');
+      }
       return null;
     }
   }
@@ -140,7 +146,9 @@ class FirebaseController implements FirebaseProps {
 
     return await FirebaseAuth.instance.signInWithCredential(credential);
   } catch (e) {
-    print('Google Sign-In failed: $e');
+    if (kDebugMode) {
+      print('Google Sign-In failed: $e');
+    }
     return null;
   }
 }
@@ -184,9 +192,13 @@ Future<void> uploadImageAndSaveMetadata({
         .doc()
         .set(metadata);
 
-    print('Upload successful!');
+    if (kDebugMode) {
+      print('Upload successful!');
+    }
   } catch (e) {
-    print('Error uploading image: $e');
+    if (kDebugMode) {
+      print('Error uploading image: $e');
+    }
   }
 }
 
@@ -219,7 +231,9 @@ Future<void> uploadMultipleImages({
     );
   }
 
-  print('All images uploaded successfully.');
+  if (kDebugMode) {
+    print('All images uploaded successfully.');
+  }
 }
 
 

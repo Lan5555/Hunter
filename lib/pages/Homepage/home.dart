@@ -6,6 +6,8 @@ import 'package:hunter/pages/Homepage/subpages/view_houses.dart';
 import 'package:hunter/pages/Homepage/subpages/view_places.dart';
 import 'package:hunter/pages/Homepage/widgets/card.dart';
 import 'package:hunter/pages/controllers/booking_controller.dart';
+import 'package:hunter/pages/provider/provider.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -27,17 +29,18 @@ class Home extends State<HomePage> {
     ViewPlaces(),
     BookingOverviewPage(
       booking: Booking(
-        id: "#BK19238",
-        name: "Seaside Villa",
+        id: "",
+        name: "",
         images: ['assets/images/house.jpg', 'assets/images/house.jpg'],
-        description: "Beautiful beachfront villa with private pool.",
-        status: "Pending", // or "Completed"
-        date: "Sept 9, 2025",
-        checkIn: "Sept 15, 2025",
-        checkOut: "Sept 20, 2025",
-        paymentStatus: "Not Paid",
+        description: "",
+        status: "", // or "Completed"
+        date: "",
+        checkIn: "",
+        checkOut: "",
+        paymentStatus: "",
         review: null, // optional
-        phoneNumber: '09065590812'
+        phoneNumber: '',
+        price: '',
       ),
     ),
     SettingsPage(),
@@ -46,6 +49,12 @@ class Home extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _selectedIndex = context.read<AppState>().selectedIndex;
+      });
+    });
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -79,17 +88,26 @@ class Home extends State<HomePage> {
                 ],
               )
             : _selectedIndex == 1
-            ? Text('Apartments', style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold
-            ),)
+            ? Text(
+                'Apartments',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              )
             : _selectedIndex == 2
-            ? Text('Booking status',style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold
-            ),)
+            ? Text(
+                'Booking status',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              )
             : _selectedIndex == 3
-            ? Text('Settings',style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold
-            ),)
+            ? Text(
+                'Settings',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              )
             : null,
         actions: [
           Container(
@@ -106,9 +124,9 @@ class Home extends State<HomePage> {
               ],
             ),
             child: IconButton(
-              icon: const Icon(Icons.search, color: Colors.black87),
+              icon: const Icon(Icons.person, color: Colors.black87),
               onPressed: () {
-                // Handle search action
+                context.read<AppState>().updateIndexData(3);
               },
             ),
           ),
@@ -134,7 +152,7 @@ class Home extends State<HomePage> {
             return GestureDetector(
               onTap: () {
                 setState(() {
-                  _selectedIndex = index;
+                  context.read<AppState>().updateIndexData(index);
                 });
               },
               child: AnimatedContainer(

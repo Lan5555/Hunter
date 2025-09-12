@@ -10,7 +10,8 @@ class Booking {
   final String checkOut;
   final String paymentStatus;
   final String? review; // Only for completed
-  final String? phoneNumber;
+  final String phoneNumber;
+  final String price;
 
   Booking({
     required this.id,
@@ -23,6 +24,7 @@ class Booking {
     required this.checkOut,
     required this.paymentStatus,
     this.review,
-    this.phoneNumber
+    required this.phoneNumber,
+    required this.price
   });
 }

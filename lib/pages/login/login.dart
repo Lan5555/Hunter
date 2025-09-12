@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hunter/pages/Homepage/home.dart';
@@ -21,7 +22,7 @@ class _HunterAuthPageState extends State<HunterAuthPage>
   final FirebaseController firebaseController = FirebaseController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  TextEditingController confirmPasswordController =TextEditingController();
+  TextEditingController confirmPasswordController = TextEditingController();
   TextEditingController usernameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
 
@@ -41,88 +42,98 @@ class _HunterAuthPageState extends State<HunterAuthPage>
       _formKey.currentState?.reset();
       acceptTerms = false;
     });
+
+    // Clear unused fields to prevent stale data
+    usernameController.clear();
+    phoneController.clear();
+    passwordController.clear();
+    confirmPasswordController.clear();
   }
 
   Future<void> _submit() async {
   if (!isLogin && !acceptTerms) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('You must accept the terms and conditions')),
+      const SnackBar(
+        content: Text('You must accept the terms and conditions'),
+      ),
     );
     return;
   }
-  setState(() => _loading = true);
 
-  try {
-    UserCredential userCredential;
+  if (_formKey.currentState!.validate()) {
+    setState(() => _loading = true);
 
-    if (isLogin) {
-      userCredential = await _auth.signInWithEmailAndPassword(
-        email: emailLoginController.text.trim(),
-        password: passwordLoginController.text,
-      );
-      if (userCredential.user == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login failed. Please try again.')),
+    try {
+      UserCredential userCredential;
+
+      if (isLogin) {
+        userCredential = await _auth.signInWithEmailAndPassword(
+          email: emailLoginController.text.trim(),
+          password: passwordLoginController.text,
         );
-        setState(() => _loading = false);
-        return;
-      }else{
-        await userCredential.user?.reload();  // Refresh user info
-        if(!mounted) return;  // Ensure context is valid
+      } else {
+        if (passwordController.text != confirmPasswordController.text) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Passwords do not match')),
+          );
+          setState(() => _loading = false);
+          return;
+        }
+
+        userCredential = await _auth.createUserWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text,
+        );
+
+        await userCredential.user?.updateDisplayName(
+          usernameController.text.trim(),
+        );
+        await userCredential.user?.reload();
+
+        // 🔐 Add user to Firestore only during registration
         final user = _auth.currentUser;
-        context.read<AppState>().updateData(user!.uid);
+        if (user != null) {
+          final userDoc = FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid);
+          final docSnap = await userDoc.get();
+
+          if (!docSnap.exists) {
+            await firebaseController.addData('users', user.uid, {
+              'id': user.uid,
+              'email': user.email,
+              'username': user.displayName ?? usernameController.text.trim(),
+              'phone': phoneController.text,
+            });
+          }
+        }
+      }
+
+      final user = _auth.currentUser;
+      if (user != null) {
+        ShowSnackBar().success(
+          title: 'Success',
+          message: isLogin
+              ? 'Logged in successfully'
+              : 'Account created successfully',
+        );
+
+        if (!mounted) return;
+
+        context.read<AppState>().updateData(user.uid);
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
         );
       }
-
-    } else {
-      if (passwordController.text != confirmPasswordController.text) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Passwords do not match')),
-        );
-        setState(() => _loading = false);
-        return;
-      }
-
-      userCredential = await _auth.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text,
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Authentication error')),
       );
-
-      await userCredential.user?.updateDisplayName(usernameController.text.trim());
-      await userCredential.user?.reload();  // Refresh user info
+    } finally {
+      setState(() => _loading = false);
     }
-
-    final user = _auth.currentUser; // Updated user object after reload
-
-    if (user != null) {
-      await firebaseController.addData('users', user.uid, {
-        'id': user.uid,
-        'email': user.email,
-        'username': user.displayName ?? usernameController.text.trim(),
-        'phone': phoneController.text,
-      });
-
-      ShowSnackBar().success(
-        title: 'Success',
-        message: isLogin ? 'Logged in successfully' : 'Account created successfully',
-      );
-
-      if (!mounted) return;  // Ensure context is valid
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
-    }
-  } on FirebaseAuthException catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(e.message ?? 'Authentication error')),
-    );
-  } finally {
-    setState(() => _loading = false);
   }
 }
 
@@ -132,22 +143,40 @@ class _HunterAuthPageState extends State<HunterAuthPage>
 
     try {
       final userCredential = await firebaseController.signInWithGoogle();
-      final user = userCredential!.user;
+      final user = userCredential?.user;
 
       if (user != null) {
-        await firebaseController.addData('users', user.uid, {
-          'id': user.uid,
-          'email': user.email,
-          'username': user.displayName ?? 'Unknown',
-        });
+        final userDoc = FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid);
+        final docSnap = await userDoc.get();
+
+        if (!docSnap.exists) {
+          await firebaseController.addData('users', user.uid, {
+            'id': user.uid,
+            'email': user.email,
+            'username': user.displayName ?? usernameController.text.trim(),
+            'phone': phoneController.text,
+          });
+        }
+
+        if (!docSnap.exists) {
+          await firebaseController.addData('users', user.uid, {
+            'id': user.uid,
+            'email': user.email,
+            'username': user.displayName ?? 'Unknown',
+          });
+        }
 
         ShowSnackBar().success(
           title: 'Success',
           message: 'Signed in with Google',
         );
 
-        // ✅ Navigate to Homepage
-        if (!mounted) return;  // Ensure context is valid
+        if (!mounted) return;
+
+        context.read<AppState>().updateData(user.uid);
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
@@ -335,7 +364,6 @@ class _HunterAuthPageState extends State<HunterAuthPage>
             }
             return null;
           },
-          
         ),
         const SizedBox(height: 16),
 
@@ -350,7 +378,6 @@ class _HunterAuthPageState extends State<HunterAuthPage>
             }
             return null;
           },
-         
         ),
         const SizedBox(height: 28),
 
@@ -401,6 +428,7 @@ class _HunterAuthPageState extends State<HunterAuthPage>
           style: const TextStyle(color: Colors.black87),
           decoration: _inputDecoration('Username', icon: Icons.person_outline),
           validator: (val) {
+            if (isLogin) return null;
             if (val == null || val.trim().length < 3) {
               return 'Enter a valid username (3+ characters)';
             }
@@ -415,12 +443,12 @@ class _HunterAuthPageState extends State<HunterAuthPage>
           decoration: _inputDecoration('Email', icon: Icons.email_outlined),
           keyboardType: TextInputType.emailAddress,
           validator: (val) {
+            if (isLogin) return null;
             if (val == null || !val.contains('@')) {
               return 'Enter a valid email';
             }
             return null;
           },
-          
         ),
         const SizedBox(height: 16),
 
@@ -433,12 +461,12 @@ class _HunterAuthPageState extends State<HunterAuthPage>
           ),
           keyboardType: TextInputType.phone,
           validator: (val) {
+            if (isLogin) return null;
             if (val == null || val.trim().length < 7) {
               return 'Enter a valid phone number';
             }
             return null;
           },
-          
         ),
         const SizedBox(height: 16),
 
@@ -448,12 +476,12 @@ class _HunterAuthPageState extends State<HunterAuthPage>
           decoration: _inputDecoration('Password', icon: Icons.lock_outline),
           obscureText: true,
           validator: (val) {
+            if (isLogin) return null;
             if (val == null || val.length < 6) {
               return 'Password must be at least 6 characters';
             }
             return null;
           },
-         
         ),
         const SizedBox(height: 16),
 
@@ -466,12 +494,12 @@ class _HunterAuthPageState extends State<HunterAuthPage>
           ),
           obscureText: true,
           validator: (val) {
+            if (isLogin) return null;
             if (val == null || val.length < 6) {
               return 'Confirm your password';
             }
             return null;
           },
-          
         ),
         const SizedBox(height: 20),
 
@@ -506,9 +534,8 @@ class _HunterAuthPageState extends State<HunterAuthPage>
           width: double.infinity,
           height: 52,
           child: ElevatedButton(
-            onPressed: (){
+            onPressed: () {
               _submit();
-
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.indigo.shade600,

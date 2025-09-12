@@ -23,62 +23,81 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _imageCountController = TextEditingController();
   List<TextEditingController> _imageLinkControllers = [];
+  FocusNode _focusNode = FocusNode();
 
   String userId = "";
 
   @override
-void initState() {
-  super.initState();
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    setState(() {
-      userId = context.read<AppState>().userId;
-     
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        userId = context.read<AppState>().userId;
+      });
     });
-  });
-}
+  }
 
   void uploadData() async {
-  if (_formKey.currentState!.validate()) {
-    if (userId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User ID not loaded. Try again.')),
-      );
-      return;
-    }
+    if (_formKey.currentState!.validate()) {
+      if (userId.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User ID not loaded. Try again.')),
+        );
+        return;
+      }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Uploading data...')),
-    );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Uploading data...')));
 
-    List<String> imageLinks = _imageLinkControllers
-    .map((controller) => controller.text.trim())
-    .where((link) => link.isNotEmpty)
-    .toList();
+      List<String> imageLinks = _imageLinkControllers
+          .map((controller) => controller.text.trim())
+          .where((link) => link.isNotEmpty)
+          .toList();
 
-    final metaData = {
-      'name': _nameController.text,
-      'price': _priceController.text,
-      'details': _detailsController.text,
-      'location': _locationController.text,
-      'images': imageLinks,
-      'phone': _phoneController.text,
-    };
+      final metaData = {
+        'name': _nameController.text,
+        'price': _priceController.text,
+        'details': _detailsController.text,
+        'location': _locationController.text,
+        'images': imageLinks,
+        'phone': _phoneController.text,
+      };
 
-    try {
-      await FirebaseController().addAutoIncrementedKey('properties', userId, metaData);
+      try {
+        await FirebaseController().addAutoIncrementedKey(
+          'properties',
+          'agents',
+          metaData,
+        );
 
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Upload successful!')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Upload failed: $e')),
-      );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Upload successful!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _formKey.currentState!.reset();
+        for (var controller in _imageLinkControllers) {
+          controller.clear();
+        }
+        _imageLinkControllers.clear();
+        _imageCountController.clear();
+        _detailsController.clear();
+        _linkController.clear();
+        _priceController.clear();
+        _nameController.clear();
+        _locationController.clear();
+        _phoneController.clear();
+        _focusNode.unfocus();
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+      }
     }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -167,42 +186,45 @@ void initState() {
                   const SizedBox(height: 16),
 
                   // Number of images input
-                TextFormField(
-                  controller: _imageCountController,
-                  decoration: inputDecoration.copyWith(labelText: 'Number of Images'),
-                  keyboardType: TextInputType.number,
-                  onChanged: (val) {
-                    int count = int.tryParse(val) ?? 0;
-                    setState(() {
-                      _imageLinkControllers = List.generate(
-                        count,
-                        (index) => TextEditingController(),
-                      );
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                // Image link fields
-                ..._imageLinkControllers.asMap().entries.map((entry) {
-                  int index = entry.key;
-                  TextEditingController controller = entry.value;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: TextFormField(
-                      controller: controller,
-                      decoration: inputDecoration.copyWith(
-                        labelText: 'Image ${index + 1} Link',
-                      ),
-                      validator: (val) =>
-                          val == null || val.isEmpty ? 'Enter image link' : null,
+                  TextFormField(
+                    controller: _imageCountController,
+                    decoration: inputDecoration.copyWith(
+                      labelText: 'Number of Images',
                     ),
-                  );
-                }).toList(),
+                    keyboardType: TextInputType.number,
+                    onChanged: (val) {
+                      int count = int.tryParse(val) ?? 0;
+                      setState(() {
+                        _imageLinkControllers = List.generate(
+                          count,
+                          (index) => TextEditingController(),
+                        );
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
+                  // Image link fields
+                  ..._imageLinkControllers.asMap().entries.map((entry) {
+                    int index = entry.key;
+                    TextEditingController controller = entry.value;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: TextFormField(
+                        controller: controller,
+                        decoration: inputDecoration.copyWith(
+                          labelText: 'Image ${index + 1} Link',
+                        ),
+                        validator: (val) => val == null || val.isEmpty
+                            ? 'Enter image link'
+                            : null,
+                      ),
+                    );
+                  }).toList(),
 
                   // Phone Number
                   TextFormField(
+                    focusNode: _focusNode,
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
                     decoration: inputDecoration.copyWith(

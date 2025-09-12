@@ -14,8 +14,16 @@ class ShowSnackBar{
           flushbarPosition: FlushbarPosition.TOP,
           borderRadius: BorderRadius.circular(20),
           duration: Duration(seconds: 3),
+          maxWidth: MediaQuery.of(context!).size.width - 50 ,
+          boxShadows: [
+            BoxShadow(
+              blurRadius: 1,
+              spreadRadius: 1,
+              color: Colors.black.withValues(alpha: 0.2)
+            )
+          ],
           
-        ).show(context!)));
+        ).show(context)));
   }
   Future<void> warning({String title = '', String message = '', BuildContext? context}) async {
     Padding(padding: EdgeInsets.all(16),
@@ -28,6 +36,14 @@ class ShowSnackBar{
           flushbarPosition: FlushbarPosition.TOP,
           borderRadius: BorderRadius.circular(20),
           duration: Duration(seconds: 3),
-        ).show(context!));
+          maxWidth: MediaQuery.of(context!).size.width - 50 ,
+          boxShadows: [
+            BoxShadow(
+              blurRadius: 1,
+              spreadRadius: 1,
+              color: Colors.black.withValues(alpha: 0.2)
+            )
+          ],
+        ).show(context));
   }
 }
