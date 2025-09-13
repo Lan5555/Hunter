@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hunter/pages/provider/provider.dart';
 import 'package:hunter/pages/splash.dart';
+import 'package:hunter/pages/welcome.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -23,6 +24,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: SplashScreen(), debugShowCheckedModeBanner: false);
+    return MaterialApp(home: Welcome(), debugShowCheckedModeBanner: false);
   }
 }

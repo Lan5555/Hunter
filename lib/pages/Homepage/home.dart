@@ -20,9 +20,9 @@ class Home extends State<HomePage> {
   int _selectedIndex = 0;
   final List<Map<String, dynamic>> _navItems = [
     {'icon': Icons.home, 'label': 'Home'},
-    {'icon': Icons.place, 'label': 'Places'},
-    {'icon': Icons.favorite, 'label': 'Likes'},
-    {'icon': Icons.person, 'label': 'Profile'},
+    {'icon': Icons.location_city, 'label': 'Apartments'},
+    {'icon': Icons.book_rounded, 'label': 'Bookings'},
+    {'icon': Icons.settings_applications, 'label': 'Settings'},
   ];
   List<Widget> pages = [
     FirstPage(),

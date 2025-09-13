@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hunter/pages/Homepage/home.dart';
 import 'package:hunter/pages/login/login.dart';
+import 'package:hunter/pages/provider/provider.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -10,6 +13,33 @@ class SplashScreen extends StatefulWidget {
 }
 
 class SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    checkLoginState();
+  }
+
+  void checkLoginState() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final bool isLoggedIn = prefs.getBool('login') ?? false;
+
+    if (isLoggedIn) {
+      final String? userId = prefs.getString('userId');
+
+      if (userId != null && context.mounted) {
+        // Update your global app state with the user ID
+        context.read<AppState>().updateData(userId);
+
+        // Navigate to HomePage
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

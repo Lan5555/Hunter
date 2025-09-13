@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:hunter/pages/Homepage/widgets/snackbar.dart';
+import 'package:hunter/pages/provider/provider.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:hunter/pages/controllers/booking_controller.dart';
 
@@ -29,7 +31,6 @@ class _BookingOverviewPageState extends State<BookingOverviewPage>
     if (booking.status == 'Completed') {
       _tabController.animateTo(1);
     }
-    
   }
 
   @override
@@ -37,7 +38,6 @@ class _BookingOverviewPageState extends State<BookingOverviewPage>
     _tabController.dispose();
     super.dispose();
   }
-
 
   /// Chip UI for status
   Widget buildStatusChip(String status) {
@@ -249,7 +249,7 @@ class _BookingOverviewPageState extends State<BookingOverviewPage>
                                 backgroundColor: Colors.green,
                               ),
                             ),
-                            Text('👈 Contact agent'),
+                            Text('Contact agent'),
                           ],
                         ),
 
@@ -258,7 +258,7 @@ class _BookingOverviewPageState extends State<BookingOverviewPage>
                         if (booking.status == 'Pending')
                           ElevatedButton.icon(
                             onPressed: () {
-                              // Cancel or manage booking
+                              context.read<AppState>().updateIndexData(1);
                             },
                             icon: const Icon(Icons.cancel, color: Colors.white),
                             label: const Text(

@@ -6,9 +6,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hunter/pages/Homepage/home.dart';
 import 'package:hunter/pages/Homepage/subpages/booking_status.dart';
+import 'package:hunter/pages/Homepage/widgets/snackbar.dart';
 import 'package:hunter/pages/controllers/booking_controller.dart';
 import 'package:hunter/pages/routes/routes.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 
 class HousePreview extends StatefulWidget {
   final String image;
@@ -54,7 +56,6 @@ class Preview extends State<HousePreview> {
         final firstAgent = data.entries.first.value;
         setState(() {
           phoneNumber = firstAgent['phone'];
-          
         });
       }
     }
@@ -135,7 +136,13 @@ class Preview extends State<HousePreview> {
                                 Shadow(blurRadius: 8, color: Colors.black54),
                               ],
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              ShowSnackBar().success(
+                                title: 'Info',
+                                message: 'Click the button below',
+                                context: context,
+                              );
+                            },
                           ),
                           const SizedBox(width: 8),
                           IconButton(
@@ -146,7 +153,10 @@ class Preview extends State<HousePreview> {
                                 Shadow(blurRadius: 8, color: Colors.black54),
                               ],
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              // ignore: deprecated_member_use
+                              shareHouseDetails();
+                            },
                           ),
                         ],
                       ),
@@ -357,6 +367,18 @@ class Preview extends State<HousePreview> {
         ),
       ),
     );
+  }
+
+  void shareHouseDetails() async {
+    final textToShare =
+        '''
+            Check out this house: ${widget.name}
+            Location: ${widget.location}
+            Price: ₦${widget.price}
+            Details: ${widget.details}
+            ''';
+
+    await SharePlus.instance.share(ShareParams(text: textToShare));
   }
 
   String generateUniqueId() {
