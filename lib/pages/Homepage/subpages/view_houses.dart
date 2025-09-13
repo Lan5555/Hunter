@@ -109,7 +109,12 @@ class _FirstPageState extends State<FirstPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    TextButton(onPressed: () {}, child: const Text('See all')),
+                    TextButton(
+                      onPressed: () {
+                        context.read<AppState>().updateIndexData(1);
+                      },
+                      child: const Text('See all'),
+                    ),
                   ],
                 )
                 .animate()
@@ -134,11 +139,12 @@ class _FirstPageState extends State<FirstPage> {
                         onBookmarkTap: () {
                           context.read<AppState>().updateIndexData(1);
                         },
+                        
                         image: CachedNetworkImage(
                           imageUrl: image,
                           fit: BoxFit.cover,
                           width: double.infinity,
-                          height: 150,
+                          height: 170,
                           placeholder: (context, url) => Container(
                             width: double.infinity,
                             height: 150,
@@ -171,6 +177,8 @@ class _FirstPageState extends State<FirstPage> {
                       height: 290,
                       autoPlay: true,
                       autoPlayInterval: const Duration(seconds: 4),
+                      enlargeCenterPage: true,
+                      viewportFraction: 0.75
                     ),
                   )
                 : Container(
@@ -194,7 +202,7 @@ class _FirstPageState extends State<FirstPage> {
 
             /// Low Budget Section
             Text(
-                  'Low Budget Apartments',
+                  'Explore...',
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),

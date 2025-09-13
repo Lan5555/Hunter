@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hunter/pages/Homepage/home.dart';
 import 'package:hunter/pages/Homepage/subpages/booking_status.dart';
+import 'package:hunter/pages/Homepage/subpages/settings.dart';
 import 'package:hunter/pages/Homepage/widgets/snackbar.dart';
 import 'package:hunter/pages/controllers/booking_controller.dart';
 import 'package:hunter/pages/routes/routes.dart';
@@ -249,12 +250,27 @@ class Preview extends State<HousePreview> {
                       ],
                     ),
                     const SizedBox(height: 24),
-                    Text(
-                      widget.details,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[800],
-                        height: 1.5,
+                    GestureDetector(
+                      onTap: () {
+                        buildBottomSheet(
+                          height: 300,
+                          context,
+                          widget: SingleChildScrollView(
+                            child: Padding(
+                              padding: EdgeInsetsGeometry.all(16),
+                              child: Text(widget.details),
+                            ),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        widget.details,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[800],
+                          height: 1.5,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -278,7 +294,7 @@ class Preview extends State<HousePreview> {
                   return ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Colors.grey.withValues(alpha: 0.1),
-                      child: Icon(Icons.check, color: Colors.green),
+                      child: Icon(Icons.check, color: Colors.green, size: 17),
                     ),
                     title: Container(
                       padding: EdgeInsets.all(12),

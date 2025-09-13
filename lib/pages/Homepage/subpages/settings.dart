@@ -800,7 +800,7 @@ Future<dynamic> buildBottomSheet(BuildContext context, {Widget? widget, double? 
     isScrollControlled: true,
     showDragHandle: true,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
     ),
     clipBehavior: Clip.antiAliasWithSaveLayer,
     builder: (context) => SafeArea(

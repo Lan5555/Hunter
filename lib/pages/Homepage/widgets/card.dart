@@ -21,14 +21,16 @@ Widget createCard({
       color: Colors.white,
       boxShadow: [
         BoxShadow(
-          blurRadius: 1.2,
+          blurRadius: 24,
           spreadRadius: 0.0,
-          //offset: Offset(0, 3.6), // 0.15 * 24
+          offset: Offset(0, 3.6), // 0.15 * 24
           color: Color.fromRGBO(33, 40, 50, 0.15),
         ),
       ],
     ),
-    child: Padding(
+    child: SingleChildScrollView(
+      child: 
+    Padding(
       padding: EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,6 +82,7 @@ Widget createCard({
                   color: Colors.blue,
                   fontWeight: FontWeight.bold,
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
               rating,
             ],
@@ -87,7 +90,7 @@ Widget createCard({
         ],
       ),
     ),
-  ));
+  )));
 }
 
 Widget createHorizontalCard({
@@ -136,10 +139,12 @@ Widget createHorizontalCard({
                 Text(
                   name,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   details,
                   style: TextStyle(color: Colors.grey),
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -149,6 +154,7 @@ Widget createHorizontalCard({
                       style: TextStyle(
                         color: Colors.blue,
                         fontWeight: FontWeight.bold,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     rating,

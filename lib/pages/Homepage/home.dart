@@ -83,6 +83,7 @@ class Home extends State<HomePage> {
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
+                      fontFamily: 'GowunBatang'
                     ),
                   ),
                 ],
@@ -92,6 +93,7 @@ class Home extends State<HomePage> {
                 'Apartments',
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
+                  
                 ),
               )
             : _selectedIndex == 2

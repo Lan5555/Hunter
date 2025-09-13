@@ -24,6 +24,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: Welcome(), debugShowCheckedModeBanner: false);
+    return MaterialApp(home: Welcome(), debugShowCheckedModeBanner: false, theme: ThemeData(fontFamily: 'GowunBatang'),);
   }
 }

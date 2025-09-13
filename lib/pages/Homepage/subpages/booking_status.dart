@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:hunter/pages/Homepage/home.dart';
+import 'package:hunter/pages/Homepage/subpages/settings.dart';
 import 'package:hunter/pages/Homepage/widgets/snackbar.dart';
 import 'package:hunter/pages/provider/provider.dart';
 import 'package:provider/provider.dart';
@@ -148,7 +150,8 @@ class _BookingOverviewPageState extends State<BookingOverviewPage>
                     fit: BoxFit.cover,
                     errorWidget: (context, url, error) =>
                         Center(child: Text('No preview..')),
-                    placeholder: (context, url) => CircularProgressIndicator(),
+                    placeholder: (context, url) =>
+                        Center(child: CircularProgressIndicator()),
                   ),
                 );
               }).toList(),
@@ -183,10 +186,25 @@ class _BookingOverviewPageState extends State<BookingOverviewPage>
             /// Description
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                booking.description,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
+              child: GestureDetector(
+                onTap: () {
+                  buildBottomSheet(
+                    height: 300,
+                    context,
+                    widget: SingleChildScrollView(
+                      child: Padding(
+                        padding: EdgeInsetsGeometry.all(16),
+                        child: Text(booking.description),
+                      ),
+                    ),
+                  );
+                },
+                child: Text(
+                  booking.description,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[600],
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
             ),
@@ -235,8 +253,17 @@ class _BookingOverviewPageState extends State<BookingOverviewPage>
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             ElevatedButton.icon(
-                              onPressed: () =>
-                                  _launchCaller(booking.phoneNumber),
+                              onPressed: () {
+                                if (booking.phoneNumber != '') {
+                                  _launchCaller(booking.phoneNumber);
+                                } else {
+                                  ShowSnackBar().warning(
+                                    title: 'Info',
+                                    message: 'No bookings stored yet.',
+                                    context: context
+                                  );
+                                }
+                              },
                               icon: const Icon(
                                 Icons.phone,
                                 color: Colors.white,
@@ -258,7 +285,47 @@ class _BookingOverviewPageState extends State<BookingOverviewPage>
                         if (booking.status == 'Pending')
                           ElevatedButton.icon(
                             onPressed: () {
-                              context.read<AppState>().updateIndexData(1);
+                              
+                              Navigator.pushReplacement(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder:
+                                      (
+                                        context,
+                                        animation,
+                                        secondaryAnimation,
+                                      ) => HomePage(),
+                                  transitionsBuilder:
+                                      (
+                                        context,
+                                        animation,
+                                        secondaryAnimation,
+                                        child,
+                                      ) {
+                                        const begin = Offset(
+                                          0.0,
+                                          1.0,
+                                        ); // Slide from right
+                                        const end = Offset.zero;
+                                        final tween =
+                                            Tween(begin: begin, end: end).chain(
+                                              CurveTween(
+                                                curve: Curves.easeInOut,
+                                              ),
+                                            );
+                                        final offsetAnimation = animation.drive(
+                                          tween,
+                                        );
+                                        return SlideTransition(
+                                          position: offsetAnimation,
+                                          child: child,
+                                        );
+                                      },
+                                  transitionDuration: Duration(
+                                    milliseconds: 400,
+                                  ),
+                                ),
+                              );
                             },
                             icon: const Icon(Icons.cancel, color: Colors.white),
                             label: const Text(
